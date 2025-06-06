@@ -1,17 +1,30 @@
 package com.inception.storylens.ui.pages
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavHostController
+import com.inception.storylens.viewmodel.AuthViewModel
+
+data class JournalEntry(
+    val id: String = "",
+    val title: String = "",
+    val imageUrl: String = "",
+    val timestamp: Long = 0L
+)
 
 @Composable
-fun HomeScreen() {
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier.fillMaxSize()
-    ) {
-        Text("Selamat Datang di StoryLens!", style = MaterialTheme.typography.headlineSmall)
-    }
+fun HomeScreen(navController: NavHostController, viewModel: AuthViewModel) {
+
+}
+
+@Preview(showSystemUi = true, uiMode = android.content.res.Configuration.UI_MODE_NIGHT_NO)
+@Composable
+fun HomeScreenPreviewLight() {
+    //HomeScreen(navController, authViewModel)
+}
+
+@Preview(showSystemUi = true, uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES)
+@Composable
+fun HomeScreenPreviewDark() {
+    //HomeScreen(navController, authViewModel)
 }

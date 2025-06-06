@@ -6,6 +6,7 @@
     <color name="steelblue">#87A5DB</color>
     <color name="midnightblue">#0B0B6B</color>
     <color name="ghostwhite">#F4F7FB</color>
+    <color name="royalblue">#1D61E7</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 </resources>

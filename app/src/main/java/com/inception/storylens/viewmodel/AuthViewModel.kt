@@ -1,40 +1,90 @@
 package com.inception.storylens.viewmodel
 
 import androidx.lifecycle.ViewModel
-import com.google.firebase.auth.FirebaseAuth
+import androidx.lifecycle.viewModelScope
+import com.inception.storylens.repository.AuthRepository
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 
-class AuthViewModel : ViewModel() {
-    private val firebaseAuth = FirebaseAuth.getInstance()
+data class LoginState(
+    val isLoading: Boolean = false,
+    val isLoginSuccess: Boolean = false,
+    val error: String? = null
+)
 
-    private val _authMessage = MutableStateFlow<String?>(null)
-    val authMessage: StateFlow<String?> = _authMessage
+data class RegisterState(
+    val isLoading: Boolean = false,
+    val isRegisterSuccess: Boolean = false,
+    val error: String? = null
+)
 
-    fun registerUser(email: String, password: String, onSuccess: () -> Unit) {
-        firebaseAuth.createUserWithEmailAndPassword(email, password)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    _authMessage.value = "Berhasil daftar"
-                    onSuccess()
-                } else {
-                    _authMessage.value = task.exception?.message
-                }
+data class ForgotPasswordState(
+    val isLoading: Boolean = false,
+    val isSuccess: Boolean = false,
+    val error: String? = null
+)
+
+class AuthViewModel(
+    private val repository: AuthRepository
+) : ViewModel() {
+
+    private val _loginState = MutableStateFlow(LoginState())
+    val loginState = _loginState.asStateFlow()
+
+    private val _registerState = MutableStateFlow(RegisterState())
+    val registerState = _registerState.asStateFlow()
+
+    private val _forgotPasswordState = MutableStateFlow(ForgotPasswordState())
+    val forgotPasswordState = _forgotPasswordState.asStateFlow()
+
+    fun loginUser(email: String, password: String) {
+        viewModelScope.launch {
+            _loginState.value = LoginState(isLoading = true)
+            val result = repository.loginUser(email, password)
+            result.onSuccess {
+                _loginState.value = LoginState(isLoginSuccess = true)
+            }.onFailure { exception ->
+                _loginState.value = LoginState(error = exception.message ?: "An unknown error occurred")
             }
+        }
     }
 
-    fun resetPassword(email: String) {
-        firebaseAuth.sendPasswordResetEmail(email)
-            .addOnCompleteListener { task ->
-                _authMessage.value = if (task.isSuccessful) {
-                    "Email reset dikirim"
-                } else {
-                    task.exception?.message
+    fun registerUser(name: String, email: String, password: String) {
+        if (name.isBlank() || email.isBlank() || password.isBlank()) {
+            _registerState.value = RegisterState(error = "Semua kolom harus diisi")
+            return
+        }
+
+        viewModelScope.launch {
+            _registerState.value = RegisterState(isLoading = true)
+            val result = repository.registerUser(name, email, password)
+            result.onSuccess {
+                _registerState.value = RegisterState(isRegisterSuccess = true)
+            }.onFailure { exception ->
+                val errorMessage = when (exception) {
+                    is FirebaseAuthWeakPasswordException -> {
+                        "Password terlalu lemah. Pastikan memiliki minimal 8 karakter, angka, dan karakter spesial."
+                    }
+                    else -> {
+                        exception.message ?: "Registrasi gagal"
+                    }
                 }
+                _registerState.value = RegisterState(error = errorMessage)
             }
+        }
     }
 
-    fun clearMessage() {
-        _authMessage.value = null
+    fun sendPasswordResetEmail(email: String) {
+        viewModelScope.launch {
+            _forgotPasswordState.value = ForgotPasswordState(isLoading = true)
+            val result = repository.sendPasswordResetEmail(email)
+            result.onSuccess {
+                _forgotPasswordState.value = ForgotPasswordState(isSuccess = true)
+            }.onFailure { exception ->
+                _forgotPasswordState.value = ForgotPasswordState(error = exception.message)
+            }
+        }
     }
 }
