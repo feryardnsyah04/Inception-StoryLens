@@ -1,29 +1,32 @@
 package com.inception.storylens.nav
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.inception.storylens.repository.AuthRepository
+import com.inception.storylens.repository.JournalRepository
 import com.inception.storylens.ui.auth.ForgotPasswordScreen
 import com.inception.storylens.ui.auth.LoginScreen
 import com.inception.storylens.ui.auth.RegisterScreen
 import com.inception.storylens.viewmodel.AuthViewModel
 import com.inception.storylens.viewmodel.AuthViewModelFactory
+import com.inception.storylens.viewmodel.HomeViewModel
+import com.inception.storylens.viewmodel.HomeViewModelFactory
+import com.inception.storylens.ui.home.HomeScreenRoute
 
 @Composable
 fun AppNavHost() {
     val navController = rememberNavController()
     val firebaseAuth = FirebaseAuth.getInstance()
+    val firestore = FirebaseFirestore.getInstance()
     val authRepository = AuthRepository(firebaseAuth)
+    val journalRepository = JournalRepository(firebaseAuth, firestore)
     val authViewModelFactory = AuthViewModelFactory(authRepository)
+    val homeViewModelFactory = HomeViewModelFactory(authRepository, journalRepository)
 
     NavHost(navController = navController, startDestination = "login") {
 
@@ -69,9 +72,8 @@ fun AppNavHost() {
         }
 
         composable("home") {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(text = "Selamat Datang! Login Berhasil.")
-            }
+            val homeViewModel: HomeViewModel = viewModel(factory = homeViewModelFactory)
+            HomeScreenRoute(homeViewModel = homeViewModel)
         }
     }
 }

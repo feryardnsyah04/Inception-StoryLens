@@ -46,11 +46,12 @@ fun LoginScreen(
             }
             loginState.error != null -> {
                 Toast.makeText(context, "Error: ${loginState.error}", Toast.LENGTH_LONG).show()
+                authViewModel.clearLoginError()
             }
         }
     }
 
-    Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+    Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface){
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -94,7 +95,7 @@ fun LoginScreen(
                 visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
                     val image = if (isPasswordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility
-                    val description = if (isPasswordVisible) "Hide password" else "Show password"
+                    val description = if (isPasswordVisible) "Sembunyikan password" else "Tampilkan password"
                     IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
                         Icon(imageVector = image, contentDescription = description)
                     }
@@ -106,7 +107,7 @@ fun LoginScreen(
                 onClick = onNavigateToForgotPassword,
                 modifier = Modifier.align(Alignment.End)
             ) {
-                Text("Lupa Password ?")
+                Text("Lupa Password?")
             }
             Spacer(modifier = Modifier.height(24.dp))
 

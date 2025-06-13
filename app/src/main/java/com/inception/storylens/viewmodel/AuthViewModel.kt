@@ -51,6 +51,10 @@ class AuthViewModel(
         }
     }
 
+    fun clearLoginError() {
+        _loginState.value = _loginState.value.copy(error = null)
+    }
+
     fun registerUser(name: String, email: String, password: String) {
         if (name.isBlank() || email.isBlank() || password.isBlank()) {
             _registerState.value = RegisterState(error = "Semua kolom harus diisi")
@@ -76,6 +80,10 @@ class AuthViewModel(
         }
     }
 
+    fun clearRegisterError() {
+        _registerState.value = _registerState.value.copy(error = null)
+    }
+
     fun sendPasswordResetEmail(email: String) {
         viewModelScope.launch {
             _forgotPasswordState.value = ForgotPasswordState(isLoading = true)
@@ -86,5 +94,9 @@ class AuthViewModel(
                 _forgotPasswordState.value = ForgotPasswordState(error = exception.message)
             }
         }
+    }
+
+    fun clearForgotPasswordError() {
+        _forgotPasswordState.value = _forgotPasswordState.value.copy(error = null)
     }
 }

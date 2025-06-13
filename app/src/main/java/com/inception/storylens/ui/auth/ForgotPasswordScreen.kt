@@ -8,6 +8,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
@@ -34,16 +35,17 @@ fun ForgotPasswordScreen(
         when {
             forgotPasswordState.isSuccess -> {
                 showSuccessView = true
-                delay(3000L)
+                delay(4000L)
                 onNavigateToLogin()
             }
             forgotPasswordState.error != null -> {
                 Toast.makeText(context, "Error: ${forgotPasswordState.error}", Toast.LENGTH_LONG).show()
+                authViewModel.clearForgotPasswordError()
             }
         }
     }
 
-    Surface(modifier = Modifier.fillMaxSize()) {
+    Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface){
         Box(contentAlignment = Alignment.Center) {
             AnimatedVisibility(visible = showSuccessView) {
                 SuccessView()
@@ -60,7 +62,8 @@ fun ForgotPasswordScreen(
                     Icon(
                         painter = painterResource(id = R.drawable.ic_lock_question),
                         contentDescription = "Forgot Password Icon",
-                        modifier = Modifier.size(80.dp)
+                        modifier = Modifier.size(80.dp),
+                        tint = Color.Unspecified
                     )
                     Spacer(modifier = Modifier.height(24.dp))
                     Text(text = "Lupa kata sandi Anda?", style = MaterialTheme.typography.headlineSmall)
@@ -121,7 +124,8 @@ fun SuccessView() {
         Icon(
             painter = painterResource(id = R.drawable.ic_envelope_check),
             contentDescription = "Success Icon",
-            modifier = Modifier.size(80.dp)
+            modifier = Modifier.size(80.dp),
+            tint = Color.Unspecified
         )
         Spacer(modifier = Modifier.height(24.dp))
         Text(
@@ -131,14 +135,13 @@ fun SuccessView() {
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = "Tidak menerima email? periksa filter spam atau kirim ulang",
+            text = "Tidak menerima email? Periksa filter spam atau kirim ulang",
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
         )
     }
 }
-
 
 @SuppressLint("ViewModelConstructorInComposable")
 @Preview(showBackground = true, name = "Forgot Password - Default View")

@@ -12,11 +12,11 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val LightColorScheme = lightColorScheme(
-    primary = RoyalBlue,          // Warna utama untuk tombol, FAB, etc.
+    primary = MidnightBlue,       // Warna utama untuk tombol, FAB, etc.
     onPrimary = White,            // Warna teks di atas komponen 'primary'
     secondary = CornflowerBlue,   // Warna sekunder untuk filter chips, etc.
     onSecondary = White,
-    background = White,           // Warna latar belakang utama aplikasi
+    background = LightSkyBlue,    // Warna latar belakang utama aplikasi
     onBackground = Black,         // Warna teks di atas 'background'
     surface = GhostWhite,         // Warna untuk permukaan komponen seperti Card, Sheet
     onSurface = Black,            // Warna teks di atas 'surface'

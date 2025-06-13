@@ -40,16 +40,17 @@ fun RegisterScreen(
     LaunchedEffect(registerState) {
         when {
             registerState.isRegisterSuccess -> {
-                Toast.makeText(context, "Registrasi Berhasil! Silakan login.", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, "Registrasi Berhasil! Silakan masuk ke akun Anda.", Toast.LENGTH_LONG).show()
                 onRegisterSuccess()
             }
             registerState.error != null -> {
                 Toast.makeText(context, "Error: ${registerState.error}", Toast.LENGTH_LONG).show()
+                authViewModel.clearRegisterError()
             }
         }
     }
 
-    Surface(modifier = Modifier.fillMaxSize()) {
+    Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface){
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -137,20 +138,5 @@ fun RegisterScreen(
                 }
             }
         }
-    }
-}
-
-
-@Preview(showBackground = true)
-@Composable
-fun RegisterScreenPreview() {
-    StoryLensTheme {
-        @Suppress("ViewModelCreation")
-        val fakeViewModel = AuthViewModel(repository = object : AuthRepository(null) {})
-        RegisterScreen(
-            authViewModel = fakeViewModel,
-            onRegisterSuccess = {},
-            onNavigateToLogin = {}
-        )
     }
 }
