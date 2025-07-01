@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -23,52 +24,86 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.material3.Divider
-import androidx.compose.material3.HorizontalDivider
+import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import coil.compose.AsyncImage
-import com.google.firebase.Timestamp
 import com.inception.storylens.model.JournalEntry
 import com.inception.storylens.ui.components.StoryLensBottomAppBar
-import com.inception.storylens.ui.theme.StoryLensTheme
+import com.inception.storylens.utils.formatDate
 import com.inception.storylens.viewmodel.HomeViewModel
-import java.text.SimpleDateFormat
-import java.util.Locale
-
 
 @Composable
-fun HomeScreenRoute(homeViewModel: HomeViewModel) {
+fun HomeScreenRoute(
+    homeViewModel: HomeViewModel,
+    navController: NavController
+) {
     val state by homeViewModel.homeState.collectAsState()
-    HomeScreen(state = state)
+    HomeScreen(
+        state = state,
+        navController = navController
+    )
 }
 
 @Composable
-fun HomeScreen(state: HomeState) {
-    var selectedItem by remember { mutableIntStateOf(0) }
+fun HomeScreen(
+    state: HomeState,
+    navController: NavController
+) {
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
+    val selectedItemIndex = remember(currentRoute) {
+        when (currentRoute) {
+            "home" -> 0
+            "journal" -> 1
+            "calendar" -> 2
+            "profile" -> 3
+            else -> 0
+        }
+    }
 
     Scaffold(
         bottomBar = {
             StoryLensBottomAppBar(
-                selectedItemIndex = selectedItem,
-                onItemSelected = { selectedItem = it },
+                selectedItemIndex = selectedItemIndex,
+                onItemSelected = { index ->
+                    val destinationRoute = when (index) {
+                        0 -> "home"
+                        1 -> "journal"
+                        2 -> "calendar"
+                        3 -> "profile"
+                        else -> "home"
+                    }
+
+                    if (currentRoute != destinationRoute) {
+                        navController.navigate(destinationRoute) {
+                            popUpTo(navController.graph.startDestinationId) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
+                },
                 onAddClick = {
-                    // TODO: Logika untuk menangani klik tombol '+'
-                    //   println("Tombol Tambah diklik!")
+                    navController.navigate("add_journal")
                 }
             )
         }
     ) { innerPadding ->
-        Surface(modifier = Modifier.fillMaxSize().padding(innerPadding), color = MaterialTheme.colorScheme.background){
+        Surface(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
+            color = MaterialTheme.colorScheme.background
+        ) {
             if (state.isLoading) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
@@ -93,40 +128,59 @@ fun HomeScreen(state: HomeState) {
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(text = state.greeting, style = MaterialTheme.typography.titleMedium)
                         Spacer(modifier = Modifier.height(10.dp))
-
-                        HorizontalDivider(
-                            color = MaterialTheme.colorScheme.onSurface,
-                            thickness = 1.dp
-                        )
-
-                        Spacer(modifier = Modifier.height(6.dp))
+                        HorizontalDivider(color = MaterialTheme.colorScheme.onSurface, thickness = 1.dp)
+                        Spacer(modifier = Modifier.height(16.dp))
                     }
 
-                    item {
-                        Text(text = "Terakhir dibuat", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-                        Spacer(modifier = Modifier.height(8.dp))
-                        state.latestJournal?.let {
-                            LatestJournalCard(journal = it)
-                        } ?: Text("Belum ada jurnal dibuat.", modifier = Modifier.padding(vertical = 16.dp))
-                        Spacer(modifier = Modifier.height(24.dp))
-                    }
-
-                    item {
-
-                        HorizontalDivider(
-                            color = MaterialTheme.colorScheme.onSurface,
-                            thickness = 1.dp
-                        )
-
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text(text = "Jurnal harian anda", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-                        Spacer(modifier = Modifier.height(8.dp))
-                    }
-                    if (state.recentJournals.isEmpty() && state.latestJournal == null) {
-                        item { Text("Jurnal harian anda masih kosong.", modifier = Modifier.padding(vertical = 16.dp)) }
+                    if (state.latestJournal == null) {
+                        item {
+                            Column(
+                                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Top
+                            ) {
+                                Text(
+                                    "Selamat Datang di StoryLens!",
+                                    style = MaterialTheme.typography.titleLarge,
+                                    textAlign = TextAlign.Center
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    "Anda belum memiliki jurnal. Tekan tombol '+' untuk membuat cerita pertama Anda.",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    textAlign = TextAlign.Center,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
                     } else {
-                        items(state.recentJournals) { journal ->
-                            RecentJournalItem(journal = journal)
+                        item {
+                            Text(text = "Terakhir dibuat", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                            Spacer(modifier = Modifier.height(8.dp))
+                            LatestJournalCard(journal = state.latestJournal)
+                            Spacer(modifier = Modifier.height(24.dp))
+                        }
+
+                        item {
+                            HorizontalDivider(color = MaterialTheme.colorScheme.onSurface, thickness = 1.dp)
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(text = "Jurnal harian anda", style = MaterialTheme.typography.titleLarge)
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+
+                        if (state.recentJournals.isEmpty()) {
+                            item {
+                                Text(
+                                    "Tidak ada jurnal lainnya.",
+                                    modifier = Modifier.padding(vertical = 16.dp),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        } else {
+                            items(state.recentJournals, key = { it.id }) { journal ->
+                                RecentJournalItem(journal = journal)
+                            }
                         }
                     }
                 }
@@ -142,12 +196,7 @@ fun LatestJournalCard(journal: JournalEntry) {
         shape = RoundedCornerShape(16.dp)
     ) {
         Column {
-            AsyncImage(
-                model = journal.imageUrl,
-                contentDescription = journal.title,
-                modifier = Modifier.fillMaxWidth().height(180.dp),
-                contentScale = ContentScale.Crop
-            )
+            AsyncImage(model = journal.imageUrl, contentDescription = journal.title, modifier = Modifier.fillMaxWidth().height(180.dp), contentScale = ContentScale.Crop)
             Row(
                 modifier = Modifier.fillMaxWidth().padding(16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -166,55 +215,11 @@ fun RecentJournalItem(journal: JournalEntry) {
         modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        AsyncImage(
-            model = journal.imageUrl,
-            contentDescription = journal.title,
-            modifier = Modifier.size(56.dp).clip(RoundedCornerShape(8.dp)),
-            contentScale = ContentScale.Crop
-        )
+        AsyncImage(model = journal.imageUrl, contentDescription = journal.title, modifier = Modifier.size(56.dp).clip(RoundedCornerShape(8.dp)), contentScale = ContentScale.Crop)
         Spacer(modifier = Modifier.width(16.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(text = journal.title, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
             Text(text = formatDate(journal.timestamp), style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
         }
-    }
-}
-
-private fun formatDate(timestamp: Timestamp): String {
-    val sdf = SimpleDateFormat("d MMMM yyyy", Locale("id", "ID"))
-    return sdf.format(timestamp.toDate())
-}
-
-@Preview(showBackground = true, name = "Home Screen - Success State")
-@Composable
-fun HomeScreenSuccessPreview() {
-    val fakeLatestJournal = JournalEntry(
-        id = "1",
-        title = "Tugas PBP",
-        imageUrl = "", // URL placeholder
-        timestamp = Timestamp.now()
-    )
-    val fakeRecentJournals = listOf(
-        JournalEntry(id = "2", title = "Egestas sed nisi felis ut", timestamp = Timestamp.now()),
-        JournalEntry(id = "3", title = "Quis senectus at", timestamp = Timestamp.now())
-    )
-    val fakeState = HomeState(
-        isLoading = false,
-        userName = "User01",
-        greeting = "Selamat Pagi",
-        latestJournal = fakeLatestJournal,
-        recentJournals = fakeRecentJournals
-    )
-    StoryLensTheme {
-        HomeScreen(state = fakeState)
-    }
-}
-
-@Preview(showBackground = true, name = "Home Screen - Loading State")
-@Composable
-fun HomeScreenLoadingPreview() {
-    val fakeState = HomeState(isLoading = true)
-    StoryLensTheme {
-        HomeScreen(state = fakeState)
     }
 }

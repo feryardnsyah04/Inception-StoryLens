@@ -3,9 +3,8 @@ package com.inception.storylens.repository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.UserProfileChangeRequest
 import kotlinx.coroutines.tasks.await
-import javax.inject.Inject
 
-open class AuthRepository @Inject constructor(
+open class AuthRepository(
     private val firebaseAuth: FirebaseAuth?
 ) {
 
