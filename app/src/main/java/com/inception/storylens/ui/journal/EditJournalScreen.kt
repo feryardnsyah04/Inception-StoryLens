@@ -34,7 +34,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults // Import ini
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -49,15 +49,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp // Import ini
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.inception.storylens.R
-// Import warna kustom dari Color.kt Anda
-import com.inception.storylens.ui.theme.LightSteelBlue
-import com.inception.storylens.ui.theme.RoyalBlue
 import com.inception.storylens.viewmodel.JournalUiState
 import java.io.File
 
@@ -101,7 +97,6 @@ fun EditJournalScreen(
     )
 
     Scaffold(
-        // Menggunakan warna background dari MaterialTheme (LightSkyBlue di LightColorScheme Anda)
         containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         if (entryToEdit == null) {
@@ -113,20 +108,18 @@ fun EditJournalScreen(
                 modifier = Modifier
                     .padding(innerPadding)
                     .fillMaxSize()
-                    .padding(horizontal = 16.dp) // Padding horizontal untuk konten utama
-                    .verticalScroll(rememberScrollState()) // Scrollable content
-                    .padding(bottom = 16.dp), // Padding bawah agar konten tidak terpotong
+                    .padding(horizontal = 16.dp)
+                    .verticalScroll(rememberScrollState())
+                    .padding(bottom = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // TopAppBar (dengan warna transparan/menyesuaikan background)
                 TopAppBar(
                     title = {
                         Text(
-                            "Ubah Jurnal", // Judul TopAppBar untuk Edit Journal
+                            "Ubah Jurnal",
                             style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(start = 6.dp),
-                            color = RoyalBlue // Warna teks judul TopAppBar sesuai desain
+                            modifier = Modifier.padding(start = 6.dp)
                         )
                     },
                     navigationIcon = {
@@ -135,12 +128,17 @@ fun EditJournalScreen(
                                 if (navController.previousBackStackEntry != null) {
                                     navController.popBackStack()
                                 }
-                            }
+                            },
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(RoundedCornerShape(50))
+                                .border(1.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(50))
+                                .background(MaterialTheme.colorScheme.primary)
                         ) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = "Kembali",
-                                tint = RoyalBlue // Warna ikon panah kembali sesuai desain
+                                tint = MaterialTheme.colorScheme.surface
                             )
                         }
                     },
@@ -151,18 +149,17 @@ fun EditJournalScreen(
                             },
                             enabled = title.isNotBlank() && imageUri != null,
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary, // MidnightBlue
-                                contentColor = MaterialTheme.colorScheme.onPrimary // White
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = MaterialTheme.colorScheme.surface
                             ),
                             shape = RoundedCornerShape(50)
                         ) { Text("Simpan") }
                     },
-                    // Set colors TopAppBar menjadi transparan atau sesuai background
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = Color.Transparent, // Membuat TopAppBar transparan
-                        titleContentColor = RoyalBlue, // Warna teks judul
-                        navigationIconContentColor = RoyalBlue, // Warna ikon navigasi
-                        actionIconContentColor = RoyalBlue // Warna ikon aksi
+                        containerColor = Color.Transparent,
+                        titleContentColor = MaterialTheme.colorScheme.onBackground,
+                        navigationIconContentColor = MaterialTheme.colorScheme.primary,
+                        actionIconContentColor = MaterialTheme.colorScheme.primary
                     ),
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -173,8 +170,8 @@ fun EditJournalScreen(
                         .wrapContentHeight()
                         .clip(RoundedCornerShape(16.dp)),
                     shape = RoundedCornerShape(16.dp),
-                    tonalElevation = 1.dp, // bisa diatur sesuai selera
-                    color = MaterialTheme.colorScheme.surface // Warna surface card/box (GhostWhite)
+                    tonalElevation = 1.dp,
+                    color = MaterialTheme.colorScheme.surface
                 ) {
                     Column(
                         modifier = Modifier.padding(16.dp),
@@ -185,8 +182,7 @@ fun EditJournalScreen(
                                 .fillMaxWidth()
                                 .height(200.dp)
                                 .clip(RoundedCornerShape(16.dp))
-                                // Ganti warna border gambar placeholder ke warna secondary dari tema (CornflowerBlue)
-                                .border(1.dp, MaterialTheme.colorScheme.secondary, RoundedCornerShape(16.dp)),
+                                .border(1.dp, MaterialTheme.colorScheme.onBackground, RoundedCornerShape(16.dp)),
                             contentAlignment = Alignment.Center
                         ) {
                             if (imageUri != null) {
@@ -200,7 +196,6 @@ fun EditJournalScreen(
                                 Icon(
                                     painter = painterResource(id = R.drawable.ic_image_placeholder),
                                     contentDescription = "Gambar Placeholder",
-                                    // Ganti warna tint ikon placeholder gambar ke warna secondary dari tema (CornflowerBlue)
                                     tint = MaterialTheme.colorScheme.secondary,
                                     modifier = Modifier.size(64.dp)
                                 )
@@ -217,8 +212,8 @@ fun EditJournalScreen(
                                     .weight(1f)
                                     .height(48.dp),
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.primary, // MidnightBlue
-                                    contentColor = MaterialTheme.colorScheme.onPrimary // White
+                                    containerColor = MaterialTheme.colorScheme.primary,
+                                    contentColor = MaterialTheme.colorScheme.surface
                                 ),
                                 shape = RoundedCornerShape(50)
                             ) {
@@ -226,11 +221,10 @@ fun EditJournalScreen(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
-                                    // Menggunakan painterResource untuk ic_camera
                                     Icon(
                                         painter = painterResource(id = R.drawable.ic_camera),
                                         contentDescription = "Ikon Kamera",
-                                        tint = MaterialTheme.colorScheme.onPrimary, // White
+                                        tint = MaterialTheme.colorScheme.surface,
                                         modifier = Modifier.size(24.dp)
                                     )
                                     Text("Ambil Foto", style = MaterialTheme.typography.labelSmall)
@@ -243,8 +237,8 @@ fun EditJournalScreen(
                                     .weight(1f)
                                     .height(48.dp),
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.primary, // MidnightBlue
-                                    contentColor = MaterialTheme.colorScheme.onPrimary // White
+                                    containerColor = MaterialTheme.colorScheme.primary,
+                                    contentColor = MaterialTheme.colorScheme.surface
                                 ),
                                 shape = RoundedCornerShape(50),
                                 contentPadding = PaddingValues(horizontal = 24.dp, vertical = 8.dp)
@@ -253,11 +247,10 @@ fun EditJournalScreen(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
-                                    // Menggunakan painterResource untuk ic_gallery
                                     Icon(
                                         painter = painterResource(id = R.drawable.ic_gallery),
                                         contentDescription = "Ikon Galeri",
-                                        tint = MaterialTheme.colorScheme.onPrimary, // White
+                                        tint = MaterialTheme.colorScheme.surface,
                                         modifier = Modifier.size(24.dp)
                                     )
                                     Text("Dari Galeri", style = MaterialTheme.typography.labelSmall)
@@ -278,21 +271,10 @@ fun EditJournalScreen(
                             focusedIndicatorColor = Color.Transparent,
                             unfocusedIndicatorColor = Color.Transparent,
                             disabledIndicatorColor = Color.Transparent,
-                            // Menggunakan LightSteelBlue untuk background TextField
-                            focusedContainerColor = LightSteelBlue,
-                            unfocusedContainerColor = LightSteelBlue,
-                            disabledContainerColor = LightSteelBlue,
-                            errorContainerColor = LightSteelBlue,
-                            // Atur warna teks placeholder agar terlihat di atas LightSteelBlue
-                            focusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            unfocusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            errorPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            // Atur warna teks input
-                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                            disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                            errorTextColor = MaterialTheme.colorScheme.error
+                            focusedContainerColor = MaterialTheme.colorScheme.surface,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                            disabledContainerColor = MaterialTheme.colorScheme.surface,
+                            errorContainerColor = MaterialTheme.colorScheme.surface
                         )
                     )
                 }
@@ -310,21 +292,10 @@ fun EditJournalScreen(
                             focusedIndicatorColor = Color.Transparent,
                             unfocusedIndicatorColor = Color.Transparent,
                             disabledIndicatorColor = Color.Transparent,
-                            // Menggunakan LightSteelBlue untuk background TextField
-                            focusedContainerColor = LightSteelBlue,
-                            unfocusedContainerColor = LightSteelBlue,
-                            disabledContainerColor = LightSteelBlue,
-                            errorContainerColor = LightSteelBlue,
-                            // Atur warna teks placeholder agar terlihat di atas LightSteelBlue
-                            focusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            unfocusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            errorPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            // Atur warna teks input
-                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                            disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                            errorTextColor = MaterialTheme.colorScheme.error
+                            focusedContainerColor = MaterialTheme.colorScheme.surface,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                            disabledContainerColor = MaterialTheme.colorScheme.surface,
+                            errorContainerColor = MaterialTheme.colorScheme.surface
                         )
                     )
                 }

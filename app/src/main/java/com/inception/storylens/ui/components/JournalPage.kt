@@ -10,7 +10,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.inception.storylens.model.JournalEntry
 
@@ -22,15 +22,19 @@ fun JournalPage(
     onEdit: (JournalEntry) -> Unit,
     onDelete: (JournalEntry) -> Unit,
     onView: (JournalEntry) -> Unit,
-    modifier: Modifier
+    modifier: Modifier,
 ) {
     Column(
-        modifier = Modifier.fillMaxSize().background(Color(0xFFE3F2FD))
+        modifier = modifier.fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
     ) {
         OutlinedTextField(
             value = searchQuery,
             onValueChange = onSearchChange,
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 16.dp, bottom = 18.dp)
+                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(50)),
             placeholder = { Text("Cari") },
             shape = RoundedCornerShape(50),
             leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Cari") },
@@ -38,8 +42,7 @@ fun JournalPage(
         )
         Text(
             text = "Semua jurnal harian anda",
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(horizontal = 16.dp)
+            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold)
         )
         Spacer(modifier = Modifier.height(8.dp))
         LazyColumn(contentPadding = PaddingValues(bottom = 16.dp)) {

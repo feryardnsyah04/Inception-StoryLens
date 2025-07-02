@@ -45,67 +45,82 @@ fun ForgotPasswordScreen(
         }
     }
 
-    Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface){
-        Box(contentAlignment = Alignment.Center) {
-            AnimatedVisibility(visible = showSuccessView) {
-                SuccessView()
-            }
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        containerColor = MaterialTheme.colorScheme.surface
+    ) { innerPadding ->
+        Surface(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
+            color = MaterialTheme.colorScheme.surface
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                AnimatedVisibility(visible = showSuccessView) {
+                    SuccessView()
+                }
 
-            AnimatedVisibility(visible = !showSuccessView) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 24.dp),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_lock_question),
-                        contentDescription = "Forgot Password Icon",
-                        modifier = Modifier.size(80.dp),
-                        tint = Color.Unspecified
-                    )
-                    Spacer(modifier = Modifier.height(24.dp))
-                    Text(text = "Lupa kata sandi Anda?", style = MaterialTheme.typography.headlineSmall)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "Masukkan email Anda yang terdaftar di bawah ini untuk menerima instruksi pengaturan ulang kata sandi",
-                        style = MaterialTheme.typography.bodyMedium,
-                        textAlign = TextAlign.Center,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                    )
-                    Spacer(modifier = Modifier.height(32.dp))
-                    OutlinedTextField(
-                        value = email,
-                        onValueChange = { email = it },
-                        label = { Text("Email") },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
-                    )
-                    Spacer(modifier = Modifier.height(24.dp))
-                    Button(
-                        onClick = { authViewModel.sendPasswordResetEmail(email) },
-                        modifier = Modifier.fillMaxWidth().height(50.dp),
-                        enabled = !forgotPasswordState.isLoading
+                AnimatedVisibility(visible = !showSuccessView) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 24.dp),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        if (forgotPasswordState.isLoading) {
-                            CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.onPrimary)
-                        } else {
-                            Text("Kirim")
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center,
-                    ) {
-                        Text("Anda ingat kata sandi Anda?", fontSize = 16.sp)
-                        TextButton(
-                            onClick = onNavigateToLogin,
-                            contentPadding = PaddingValues(0.dp)
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_lock_question),
+                            contentDescription = "Forgot Password Icon",
+                            modifier = Modifier.size(80.dp),
+                            tint = Color.Unspecified
+                        )
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Text(text = "Lupa kata sandi Anda?", style = MaterialTheme.typography.headlineSmall)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Masukkan email Anda yang terdaftar di bawah ini untuk menerima instruksi pengaturan ulang kata sandi",
+                            style = MaterialTheme.typography.bodyMedium,
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                        )
+                        Spacer(modifier = Modifier.height(32.dp))
+                        OutlinedTextField(
+                            value = email,
+                            onValueChange = { email = it },
+                            label = { Text("Email") },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true
+                        )
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Button(
+                            onClick = { authViewModel.sendPasswordResetEmail(email) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(50.dp),
+                            enabled = !forgotPasswordState.isLoading
                         ) {
-                            Text("Masuk", fontSize = 16.sp, textAlign = TextAlign.Center)
+                            if (forgotPasswordState.isLoading) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(24.dp),
+                                    color = MaterialTheme.colorScheme.onPrimary
+                                )
+                            } else {
+                                Text("Kirim")
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center,
+                        ) {
+                            Text("Anda ingat kata sandi Anda?", fontSize = 16.sp)
+                            TextButton(
+                                onClick = onNavigateToLogin,
+                                contentPadding = PaddingValues(0.dp)
+                            ) {
+                                Text("Masuk", fontSize = 16.sp, textAlign = TextAlign.Center)
+                            }
                         }
                     }
                 }

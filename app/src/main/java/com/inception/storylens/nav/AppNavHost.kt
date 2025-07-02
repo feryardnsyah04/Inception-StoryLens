@@ -96,38 +96,19 @@ fun AppNavHost() {
         }
 
         composable(
-            route = "view_journal/{journalId}",
-            arguments = listOf(navArgument("journalId") { type = NavType.StringType })
-        ) { backStackEntry ->
-            val journalId = backStackEntry.arguments?.getString("journalId")
-            LaunchedEffect(journalId) {
-                if (journalId != null) {
-                    journalViewModel.getJournalById(journalId)
-                }
-            }
-            val journalState by journalViewModel.uiState.collectAsState()
-            ViewJournalScreen(
-                journalState = journalState,
-                onNavigateBack = { navController.popBackStack() },
-                onEdit = { navController.navigate("edit_journal/$journalId") },
-                onDelete = {
-                    journalId?.let { id -> journalViewModel.deleteJournal(id) }
-                    navController.popBackStack()
-                }
-            )
-        }
-
-        composable(
             route = "edit_journal/{journalId}",
             arguments = listOf(navArgument("journalId") { type = NavType.StringType })
         ) { backStackEntry ->
             val journalId = backStackEntry.arguments?.getString("journalId")
+
             LaunchedEffect(journalId) {
                 if (journalId != null) {
                     journalViewModel.getJournalById(journalId)
                 }
             }
+
             val journalState by journalViewModel.uiState.collectAsState()
+
             EditJournalScreen(
                 journalState = journalState,
                 navController = navController,
@@ -135,6 +116,38 @@ fun AppNavHost() {
                     journalId?.let { id ->
                         journalViewModel.updateJournal(id, title, note, uri)
                     }
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable(
+            route = "view_journal/{journalId}",
+            arguments = listOf(navArgument("journalId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val journalId = backStackEntry.arguments?.getString("journalId")
+
+            LaunchedEffect(journalId) {
+                if (journalId != null) {
+                    journalViewModel.getJournalById(journalId)
+                }
+            }
+
+            val journalState by journalViewModel.uiState.collectAsState()
+
+            // PERBAIKAN PADA PEMANGGILAN FUNGSI DI BAWAH INI
+            ViewJournalScreen(
+                journalState = journalState,
+                // Dihapus: navController = navController,
+                onNavigateBack = { navController.popBackStack() }, // Ditambahkan: Berikan aksi untuk tombol kembali
+                onEdit = {
+                    // Pastikan journalId tidak null saat navigasi
+                    journalId?.let { id ->
+                        navController.navigate("edit_journal/$id")
+                    }
+                },
+                onDelete = {
+                    journalId?.let { id -> journalViewModel.deleteJournal(id) }
                     navController.popBackStack()
                 }
             )

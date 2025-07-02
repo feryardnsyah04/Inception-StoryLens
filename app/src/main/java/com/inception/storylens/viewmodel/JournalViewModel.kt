@@ -10,6 +10,7 @@ import com.inception.storylens.model.JournalEntry
 import com.inception.storylens.repository.JournalRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class JournalUiState(
@@ -28,10 +29,10 @@ class JournalViewModel(private val repository: JournalRepository) : ViewModel() 
         private set
 
     val filteredEntries: List<JournalEntry>
-        get() = _uiState.value.journals.filter {
-            it.title.contains(searchQuery, ignoreCase = true) ||
-                    it.note.contains(searchQuery, ignoreCase = true)
-        }
+    get() = uiState.value.journals.filter {
+        it.title.contains(searchQuery, ignoreCase = true) ||
+        it.note.contains(searchQuery, ignoreCase = true)
+    }
 
     init {
         loadJournals()
@@ -82,5 +83,9 @@ class JournalViewModel(private val repository: JournalRepository) : ViewModel() 
 
     fun updateSearchQuery(query: String) {
         searchQuery = query
+    }
+
+    fun clearError() {
+        _uiState.update { it.copy(error = null) }
     }
 }

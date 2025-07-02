@@ -62,7 +62,12 @@ class JournalRepository(
             .collection("journals")
             .orderBy("timestamp", Query.Direction.DESCENDING)
             .get().await()
-        Result.success(snapshot.documents.mapNotNull { it.toObject<JournalEntry>()?.copy(id = it.id) })
+
+        val journals = snapshot.documents.mapNotNull { doc ->
+            doc.toObject<JournalEntry>()
+        }
+        Result.success(journals)
+
     } catch (e: Exception) {
         Result.failure(e)
     }
@@ -70,7 +75,8 @@ class JournalRepository(
     suspend fun getJournalById(journalId: String): Result<JournalEntry> = try {
         val doc = firestore.collection("users").document(userId)
             .collection("journals").document(journalId).get().await()
-        Result.success(doc.toObject<JournalEntry>()?.copy(id = doc.id) ?: throw Exception("Jurnal tidak ditemukan"))
+        val journal = doc.toObject<JournalEntry>()
+        Result.success(journal ?: throw Exception("Jurnal tidak ditemukan"))
     } catch (e: Exception) {
         Result.failure(e)
     }
@@ -121,7 +127,7 @@ class JournalRepository(
                 val filePath = journalToDelete.imageUrl.substringAfterLast("journals/")
                 if (filePath.isNotEmpty()) {
                     journalBucket.delete(listOf(filePath))
-                    Log.d(tag, "Successfully deleted image: $filePath")
+                    Log.d(tag, "Berhasil menghapus gambar: $filePath")
                 }
             } catch (e: Exception) {
                 Log.w("JournalRepository", "Gagal menghapus file dari storage (mungkin sudah dihapus): ${e.message}")

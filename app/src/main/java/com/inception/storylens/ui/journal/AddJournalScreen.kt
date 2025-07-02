@@ -101,7 +101,6 @@ fun AddJournalScreen(
                 .padding(bottom = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // TopAppBar (dengan warna transparan/menyesuaikan background)
             TopAppBar(
                 title = {
                     Text(
