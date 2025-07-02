@@ -35,16 +35,9 @@ fun JournalScreen(
 
     Scaffold(
         bottomBar = {
+            // Pemanggilannya menjadi lebih sederhana
             StoryLensBottomAppBar(
-                selectedItemIndex = 1,
-                onItemSelected = { index ->
-                    when (index) {
-                        0 -> navController.navigate("home") {
-                            popUpTo(navController.graph.startDestinationId)
-                            launchSingleTop = true
-                        }
-                    }
-                },
+                navController = navController,
                 onAddClick = {
                     navController.navigate("add_journal")
                 }

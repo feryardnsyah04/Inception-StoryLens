@@ -31,6 +31,7 @@ android {
         }
     }
     compileOptions {
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_1_9
         targetCompatibility = JavaVersion.VERSION_1_9
     }
@@ -71,6 +72,9 @@ dependencies {
     implementation("io.ktor:ktor-client-android:$ktorversion")
     implementation("io.ktor:ktor-client-core:$ktorversion")
     implementation("io.ktor:ktor-utils:$ktorversion")
+    // Dependensi untuk Kalender
+    implementation("io.github.boguszpawlowski.composecalendar:composecalendar:1.2.0")
+    implementation("io.github.boguszpawlowski.composecalendar:kotlinx-datetime:1.2.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -78,4 +82,5 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 }

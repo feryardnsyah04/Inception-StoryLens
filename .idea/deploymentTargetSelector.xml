@@ -4,17 +4,14 @@
     <selectionStates>
       <SelectionState runConfigName="StoryLens.app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-06-06T16:07:22.289554Z">
+        <DropdownSelection timestamp="2025-07-02T08:07:53.551766100Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="PhysicalDevice" identifier="serial=5200a75efe3194b3" />
+              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\SYLVIA\.android\avd\Pixel_4_XL.avd" />
             </handle>
           </Target>
         </DropdownSelection>
         <DialogSelection />
-      </SelectionState>
-      <SelectionState runConfigName="HomeScreenPreview">
-        <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>
   </component>

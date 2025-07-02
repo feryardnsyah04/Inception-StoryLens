@@ -15,7 +15,9 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.inception.storylens.repository.AuthRepository
 import com.inception.storylens.repository.JournalRepository
+import com.inception.storylens.repository.TaskRepository
 import com.inception.storylens.ui.auth.*
+import com.inception.storylens.ui.calendar.CalendarScreen
 import com.inception.storylens.ui.home.HomeScreenRoute
 import com.inception.storylens.ui.journal.*
 import com.inception.storylens.viewmodel.*
@@ -43,10 +45,12 @@ fun AppNavHost() {
 
     val authRepository = AuthRepository(firebaseAuth)
     val journalRepository = JournalRepository(firebaseAuth, firestore, supabase, context)
+    val taskRepository = TaskRepository(firebaseAuth, firestore)
 
     val authViewModelFactory = AuthViewModelFactory(authRepository)
     val homeViewModelFactory = HomeViewModelFactory(authRepository, journalRepository)
     val journalViewModelFactory = JournalViewModelFactory(journalRepository)
+    val calendarViewModelFactory = CalendarViewModelFactory(taskRepository)
 
     val journalViewModel: JournalViewModel = viewModel(factory = journalViewModelFactory)
     val authViewModel: AuthViewModel = viewModel(factory = authViewModelFactory)
@@ -151,6 +155,17 @@ fun AppNavHost() {
                     navController.popBackStack()
                 }
             )
+        }
+
+        composable("calendar") {
+            val calendarViewModel: CalendarViewModel = viewModel(factory = calendarViewModelFactory)
+            CalendarScreen(
+                navController = navController,
+                viewModel = calendarViewModel
+            )
+        }
+
+        composable("profile") {
         }
     }
 }

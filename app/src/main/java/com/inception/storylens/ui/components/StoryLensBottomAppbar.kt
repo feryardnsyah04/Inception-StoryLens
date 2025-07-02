@@ -12,6 +12,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -19,121 +20,125 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.inception.storylens.R
 
-// Definisikan data untuk setiap item navigasi
+// 1. Modifikasi data class untuk menyertakan 'route'
 data class BottomNavItem(
     val label: String,
     val selectedIcon: Painter,
     val unselectedIcon: Painter,
+    val route: String, // Rute tujuan navigasi
     val isSpecial: Boolean = false
 )
 
 @Composable
+// 2. Ubah parameter untuk menerima NavController
 fun StoryLensBottomAppBar(
-    selectedItemIndex: Int,
-    onItemSelected: (Int) -> Unit,
-    onAddClick: () -> Unit // Lambda khusus untuk tombol '+'
+    navController: NavController,
+    onAddClick: () -> Unit // Lambda untuk tombol '+' tetap sama
 ) {
-    // Siapkan semua 5 item navigasi
+    // Siapkan semua item navigasi dengan rutenya masing-masing
     val navItems = listOf(
         BottomNavItem(
             label = "Beranda",
             selectedIcon = painterResource(id = R.drawable.ic_home_filled),
-            unselectedIcon = painterResource(id = R.drawable.ic_home_outlined)
+            unselectedIcon = painterResource(id = R.drawable.ic_home_outlined),
+            route = "home"
         ),
         BottomNavItem(
             label = "Jurnal",
             selectedIcon = painterResource(id = R.drawable.ic_journal_filled),
-            unselectedIcon = painterResource(id = R.drawable.ic_journal_outlined)
+            unselectedIcon = painterResource(id = R.drawable.ic_journal_outlined),
+            route = "journal"
         ),
         BottomNavItem(
             label = "Tambah",
             selectedIcon = painterResource(id = R.drawable.ic_add),
             unselectedIcon = painterResource(id = R.drawable.ic_add),
+            route = "add_journal", // Rute ini akan ditangani oleh onAddClick
             isSpecial = true
         ),
         BottomNavItem(
             label = "Kalender",
             selectedIcon = painterResource(id = R.drawable.ic_calendar_filled),
-            unselectedIcon = painterResource(id = R.drawable.ic_calendar_outlined)
+            unselectedIcon = painterResource(id = R.drawable.ic_calendar_outlined),
+            route = "calendar"
         ),
         BottomNavItem(
             label = "Profil",
             selectedIcon = painterResource(id = R.drawable.ic_profile_filled),
-            unselectedIcon = painterResource(id = R.drawable.ic_profile_outlined)
+            unselectedIcon = painterResource(id = R.drawable.ic_profile_outlined),
+            route = "profile"
         )
     )
 
-    // Gunakan NavigationBar
+    // Dapatkan rute saat ini dari NavController untuk menentukan item mana yang aktif
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
     NavigationBar(
         modifier = Modifier.clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)),
         containerColor = MaterialTheme.colorScheme.surface,
     ) {
-        navItems.forEachIndexed { index, item ->
-            // Gunakan index mapping yang benar karena item 'Tambah' tidak mempengaruhi state 'selected'
-            // Item: Beranda(0), Jurnal(1), Tambah(2), Kalender(3), Profil(4)
-            // selectedItemIndex: Beranda(0), Jurnal(1), Kalender(2), Profil(3)
-            val isSelected = if (index < 2) {
-                selectedItemIndex == index
-            } else if (index > 2) {
-                selectedItemIndex == index - 1
-            } else {
-                false
-            }
+        navItems.forEach { item ->
+            // 3. Logika isSelected sekarang lebih sederhana dan aman
+            val isSelected = currentRoute == item.route
 
             NavigationBarItem(
                 selected = isSelected,
+                // 4. Logika onClick sekarang lebih sederhana
                 onClick = {
                     if (item.isSpecial) {
                         onAddClick()
                     } else {
-                        // Map index klik ke index state
-                        val newIndex = if (index < 2) index else index - 1
-                        onItemSelected(newIndex)
+                        navController.navigate(item.route) {
+                            // Pop up ke start destination untuk menghindari tumpukan navigasi
+                            popUpTo(navController.graph.startDestinationId) {
+                                saveState = true
+                            }
+                            // Hindari membuat ulang destinasi yang sama
+                            launchSingleTop = true
+                            // Kembalikan state saat menavigasi kembali
+                            restoreState = true
+                        }
                     }
                 },
                 icon = {
+                    val iconPainter = if (isSelected) item.selectedIcon else item.unselectedIcon
+
                     if (item.isSpecial) {
                         // Tampilan khusus untuk tombol '+'
                         Box(
-                            modifier = Modifier
-                                .size(44.dp)
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.primary),
+                            modifier = Modifier.size(44.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(
-                                painter = item.selectedIcon,
-                                contentDescription = item.label,
-                                tint = MaterialTheme.colorScheme.surface
-                            )
+                            Icon(painter = iconPainter, contentDescription = item.label, tint = MaterialTheme.colorScheme.surface)
                         }
                     } else if (isSelected) {
+                        // Tampilan khusus untuk item yang terpilih
                         Box(
-                            modifier = Modifier
-                                .size(44.dp)
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.primary),
+                            modifier = Modifier.size(44.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(
-                                painter = item.selectedIcon,
-                                contentDescription = item.label,
-                                tint = MaterialTheme.colorScheme.onPrimary
-                            )
+                            Icon(painter = iconPainter, contentDescription = item.label, tint = MaterialTheme.colorScheme.onPrimary)
                         }
                     } else {
-                        Icon(painter = item.unselectedIcon, contentDescription = item.label)
+                        // Tampilan item biasa (tidak terpilih)
+                        Icon(painter = iconPainter, contentDescription = item.label)
                     }
                 },
                 label = {
-                    if (!isSelected && !item.isSpecial) { Text(item.label) }
+                    // Hanya tampilkan label jika tidak terpilih dan bukan tombol spesial
+                    if (!isSelected && !item.isSpecial) {
+                        Text(item.label)
+                    }
                 },
                 colors = NavigationBarItemDefaults.colors(
                     unselectedIconColor = MaterialTheme.colorScheme.primary,
                     unselectedTextColor = MaterialTheme.colorScheme.primary,
-                    indicatorColor = Color.Transparent
+                    indicatorColor = Color.Transparent // Hilangkan indikator default
                 )
             )
         }
