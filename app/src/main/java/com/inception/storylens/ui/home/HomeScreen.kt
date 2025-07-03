@@ -40,37 +40,20 @@ fun HomeScreen(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    val selectedItemIndex = remember(currentRoute) {
-        when (currentRoute) {
-            "home" -> 0
-            "journal" -> 1
-            "calendar" -> 2
-            "profile" -> 3
-            else -> 0
-        }
-    }
+//    val selectedItemIndex = remember(currentRoute) {
+//        when (currentRoute) {
+//            "home" -> 0
+//            "journal" -> 1
+//            "calendar" -> 2
+//            "profile" -> 3
+//            else -> 0
+//        }
+//    }
 
     Scaffold(
         bottomBar = {
             StoryLensBottomAppBar(
-                selectedItemIndex = selectedItemIndex,
-                onItemSelected = { index ->
-                    val destinationRoute = when (index) {
-                        0 -> "home"
-                        1 -> "journal"
-                        2 -> "calendar"
-                        3 -> "profile"
-                        else -> "home"
-                    }
-
-                    if (currentRoute != destinationRoute) {
-                        navController.navigate(destinationRoute) {
-                            popUpTo(navController.graph.startDestinationId) { saveState = true }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                    }
-                },
+                navController = navController,
                 onAddClick = {
                     navController.navigate("add_journal")
                 }

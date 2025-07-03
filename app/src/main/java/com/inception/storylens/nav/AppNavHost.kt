@@ -25,6 +25,13 @@ import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.storage.Storage
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.postgrest.Postgrest
+import com.inception.storylens.ui.intro.SplashScreen
+import com.inception.storylens.ui.intro.OnboardingScreen
+import com.inception.storylens.ui.profile.ProfileScreen
+import com.inception.storylens.ui.profile.EditProfileScreen
+import com.inception.storylens.ui.profile.ChangePasswordScreen
+import com.inception.storylens.viewmodel.ProfileViewModel
+import com.inception.storylens.viewmodel.ProfileViewModelFactory
 
 @Composable
 fun AppNavHost() {
@@ -55,7 +62,7 @@ fun AppNavHost() {
     val journalViewModel: JournalViewModel = viewModel(factory = journalViewModelFactory)
     val authViewModel: AuthViewModel = viewModel(factory = authViewModelFactory)
 
-    NavHost(navController = navController, startDestination = "login") {
+    NavHost(navController = navController, startDestination = "splash") {
 
         composable("login") {
             LoginScreen(
@@ -166,6 +173,39 @@ fun AppNavHost() {
         }
 
         composable("profile") {
+        }
+
+        composable("splash") {
+            SplashScreen(navController = navController)
+        }
+
+        composable("onboarding") {
+            OnboardingScreen(navController = navController)
+        }
+
+// Rute untuk Profil
+        composable("profile") {
+            // Kita akan buat ViewModel ini di langkah D
+            val profileViewModel: ProfileViewModel = viewModel(factory = ProfileViewModelFactory(authRepository))
+            ProfileScreen(
+                navController = navController,
+                profileViewModel = profileViewModel
+            )
+        }
+
+        composable("edit_profile") {
+            val profileViewModel: ProfileViewModel = viewModel(factory = ProfileViewModelFactory(authRepository))
+            EditProfileScreen(
+                // Teruskan ViewModel dan fungsi navigasi kembali
+                profileViewModel = profileViewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable("change_password") {
+            ChangePasswordScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
     }
 }
