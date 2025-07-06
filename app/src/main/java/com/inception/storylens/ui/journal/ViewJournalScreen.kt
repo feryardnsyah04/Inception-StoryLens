@@ -65,7 +65,8 @@ fun ViewJournalScreen(
             title = { Text("Anda yakin ingin menghapus jurnal?") },
             text = { Text("Setelah dihapus, jurnal tidak dapat dipulihkan.") },
             confirmButton = { TextButton(onClick = { onDelete(); showDialog = false }) { Text("Ya, Hapus") } },
-            dismissButton = { TextButton(onClick = { showDialog = false }) { Text("Batal") } }
+            dismissButton = { TextButton(onClick = { showDialog = false }) { Text("Batal") } },
+            containerColor = MaterialTheme.colorScheme.surface,
         )
     }
 

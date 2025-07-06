@@ -31,13 +31,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.inception.storylens.model.Task
-import com.inception.storylens.repository.TaskRepository
 import com.inception.storylens.ui.components.StoryLensBottomAppBar
 import com.inception.storylens.viewmodel.CalendarViewModel
-import com.inception.storylens.viewmodel.CalendarViewModelFactory
 import io.github.boguszpawlowski.composecalendar.SelectableCalendar
 import io.github.boguszpawlowski.composecalendar.rememberSelectableCalendarState
 import kotlinx.coroutines.launch
@@ -48,8 +45,6 @@ import java.util.Locale
 @Composable
 fun CalendarScreen(
     navController: NavController,
-    // --- PERBAIKAN DI SINI: Hapus nilai default viewModel() ---
-    // Sekarang CalendarScreen hanya menerima ViewModel yang sudah dibuat oleh AppNavHost
     viewModel: CalendarViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -70,16 +65,13 @@ fun CalendarScreen(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
-                .background(Color(0xFFE3F2FD))
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // =============================================================
-            // BAGIAN KALENDER (TIDAK ADA PERUBAHAN SESUAI INSTRUKSI)
-            // =============================================================
             Text(
                 text = calendarState.monthState.currentMonth.year.toString(),
-                style = MaterialTheme.typography.headlineLarge,
+                style = MaterialTheme.typography.displaySmall,
+                color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -159,9 +151,6 @@ fun CalendarScreen(
                     }
                 )
             }
-            // =============================================================
-            // AKHIR BAGIAN KALENDER
-            // =============================================================
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -172,8 +161,6 @@ fun CalendarScreen(
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(8.dp))
-
-            // --- PERUBAHAN BAGIAN TUGAS DIMULAI DI SINI ---
             Surface(
                 shape = RoundedCornerShape(16.dp),
                 color = Color.White,
@@ -182,7 +169,7 @@ fun CalendarScreen(
             ) {
                 Column(modifier = Modifier.fillMaxSize()) {
                     LazyColumn(
-                        modifier = Modifier.weight(1f), // Agar daftar tugas mengisi ruang
+                        modifier = Modifier.weight(1f),
                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
                     ) {
                         items(uiState.tasksForSelectedDate, key = { it.id }) { task ->
@@ -194,12 +181,10 @@ fun CalendarScreen(
                                 onCheckedChange = { isChecked ->
                                     viewModel.onTaskCheckedChange(task, isChecked)
                                 },
-                                // Menambahkan fungsi hapus
                                 onDelete = { viewModel.deleteTask(task.id) }
                             )
                         }
                     }
-                    // Menambahkan bagian untuk input tugas baru
                     AddTaskSection(onAddTask = { description -> viewModel.addTask(description) })
                 }
             }
@@ -207,7 +192,6 @@ fun CalendarScreen(
     }
 }
 
-// Komponen baru untuk input tugas
 @Composable
 fun AddTaskSection(onAddTask: (String) -> Unit) {
     var text by remember { mutableStateOf("") }
@@ -242,13 +226,12 @@ fun AddTaskSection(onAddTask: (String) -> Unit) {
     }
 }
 
-// Komponen TaskItem yang diperbarui
 @Composable
 fun TaskItem(
     task: Task,
     onSaveEdit: (String) -> Unit,
     onCheckedChange: (Boolean) -> Unit,
-    onDelete: () -> Unit // Parameter baru untuk hapus
+    onDelete: () -> Unit
 ) {
     var text by remember(task.description) { mutableStateOf(task.description) }
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -273,7 +256,7 @@ fun TaskItem(
                 color = if (task.isCompleted) Color.Gray else Color.Black
             ),
             cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-            modifier = Modifier.weight(1f), // Modifier agar tombol hapus terdorong ke kanan
+            modifier = Modifier.weight(1f),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(
                 onDone = {
@@ -282,7 +265,6 @@ fun TaskItem(
                 }
             )
         )
-        // Tombol Hapus untuk setiap item
         IconButton(onClick = onDelete) {
             Icon(Icons.Default.Close, contentDescription = "Hapus Tugas", tint = Color.Gray)
         }

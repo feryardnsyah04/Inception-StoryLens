@@ -1,24 +1,44 @@
 package com.inception.storylens.ui.auth
 
-import android.annotation.SuppressLint
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.inception.storylens.R
-import com.inception.storylens.ui.theme.StoryLensTheme
 import com.inception.storylens.viewmodel.AuthViewModel
-import com.inception.storylens.repository.AuthRepository
 import kotlinx.coroutines.delay
 
 @Composable
@@ -155,34 +175,5 @@ fun SuccessView() {
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
         )
-    }
-}
-
-@SuppressLint("ViewModelConstructorInComposable")
-@Preview(showBackground = true, name = "Forgot Password - Default View")
-@Composable
-fun ForgotPasswordScreenPreview() {
-    StoryLensTheme {
-        @Suppress("ViewModelCreation")
-        val fakeViewModel = AuthViewModel(
-            repository = object : AuthRepository(null) {
-                override suspend fun sendPasswordResetEmail(email: String): Result<Unit> {
-                    return Result.success(Unit)
-                }
-            }
-        )
-
-        ForgotPasswordScreen(
-            authViewModel = fakeViewModel,
-            onNavigateToLogin = {}
-        )
-    }
-}
-
-@Preview(showBackground = true, name = "Forgot Password - Success View")
-@Composable
-fun SuccessViewPreview() {
-    StoryLensTheme {
-        SuccessView()
     }
 }

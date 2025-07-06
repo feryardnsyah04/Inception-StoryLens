@@ -13,7 +13,7 @@ class OnboardingViewModel : ViewModel() {
 
     fun onStartClicked() {
         viewModelScope.launch {
-            _navigateToMain.emit("home")
+            _navigateToMain.emit("login")
         }
     }
 }

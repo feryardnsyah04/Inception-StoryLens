@@ -127,7 +127,7 @@ fun EditProfileScreen(
                             .padding(bottom = 16.dp),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Text("Simpan Perubahan", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        Text("Ubah Perubahan", fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }

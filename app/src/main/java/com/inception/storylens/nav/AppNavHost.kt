@@ -50,14 +50,15 @@ fun AppNavHost() {
         install(Postgrest)
     }
 
-    val authRepository = AuthRepository(firebaseAuth)
+    val authRepository = AuthRepository(firebaseAuth, firestore, supabase, context)
     val journalRepository = JournalRepository(firebaseAuth, firestore, supabase, context)
     val taskRepository = TaskRepository(firebaseAuth, firestore)
 
-    val authViewModelFactory = AuthViewModelFactory(authRepository)
+    val authViewModelFactory = AuthViewModelFactory(firebaseAuth, firestore, supabase, context)
     val homeViewModelFactory = HomeViewModelFactory(authRepository, journalRepository)
     val journalViewModelFactory = JournalViewModelFactory(journalRepository)
     val calendarViewModelFactory = CalendarViewModelFactory(taskRepository)
+    val profileViewModelFactory = ProfileViewModelFactory(authRepository)
 
     val journalViewModel: JournalViewModel = viewModel(factory = journalViewModelFactory)
     val authViewModel: AuthViewModel = viewModel(factory = authViewModelFactory)
@@ -69,7 +70,7 @@ fun AppNavHost() {
                 authViewModel = authViewModel,
                 onLoginSuccess = {
                     navController.navigate("home") {
-                        popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                        popUpTo(navController.graph.id) { inclusive = true }
                     }
                 },
                 onNavigateToRegister = { navController.navigate("register") },
@@ -99,113 +100,199 @@ fun AppNavHost() {
         }
 
         composable("journal") {
-            JournalScreen(viewModel = journalViewModel, navController = navController)
+            // Guard navigasi: Pastikan pengguna sudah login
+            val currentUser = FirebaseAuth.getInstance().currentUser
+            if (currentUser == null) {
+                LaunchedEffect(Unit) {
+                    navController.navigate("login") {
+                        popUpTo(navController.graph.id) { inclusive = true }
+                    }
+                }
+            } else {
+                JournalScreen(viewModel = journalViewModel, navController = navController)
+            }
         }
 
         composable("add_journal") {
-            AddJournalScreen(viewModel = journalViewModel, navController = navController)
+            // Guard navigasi: Pastikan pengguna sudah login
+            val currentUser = FirebaseAuth.getInstance().currentUser
+            if (currentUser == null) {
+                LaunchedEffect(Unit) {
+                    navController.navigate("login") {
+                        popUpTo(navController.graph.id) { inclusive = true }
+                    }
+                }
+            } else {
+                AddJournalScreen(viewModel = journalViewModel, navController = navController)
+            }
         }
 
         composable(
             route = "edit_journal/{journalId}",
             arguments = listOf(navArgument("journalId") { type = NavType.StringType })
         ) { backStackEntry ->
-            val journalId = backStackEntry.arguments?.getString("journalId")
-
-            LaunchedEffect(journalId) {
-                if (journalId != null) {
-                    journalViewModel.getJournalById(journalId)
-                }
-            }
-
-            val journalState by journalViewModel.uiState.collectAsState()
-
-            EditJournalScreen(
-                journalState = journalState,
-                navController = navController,
-                onUpdate = { title, note, uri ->
-                    journalId?.let { id ->
-                        journalViewModel.updateJournal(id, title, note, uri)
+            // Guard navigasi: Pastikan pengguna sudah login
+            val currentUser = FirebaseAuth.getInstance().currentUser
+            if (currentUser == null) {
+                LaunchedEffect(Unit) {
+                    navController.navigate("login") {
+                        popUpTo(navController.graph.id) { inclusive = true }
                     }
-                    navController.popBackStack()
                 }
-            )
+            } else {
+                val journalId = backStackEntry.arguments?.getString("journalId")
+
+                LaunchedEffect(journalId) {
+                    if (journalId != null) {
+                        journalViewModel.getJournalById(journalId)
+                    }
+                }
+
+                val journalState by journalViewModel.uiState.collectAsState()
+
+                EditJournalScreen(
+                    journalState = journalState,
+                    navController = navController,
+                    onUpdate = { title, note, uri ->
+                        journalId?.let { id ->
+                            journalViewModel.updateJournal(id, title, note, uri)
+                        }
+                        navController.popBackStack()
+                    }
+                )
+            }
         }
 
         composable(
             route = "view_journal/{journalId}",
             arguments = listOf(navArgument("journalId") { type = NavType.StringType })
         ) { backStackEntry ->
-            val journalId = backStackEntry.arguments?.getString("journalId")
-
-            LaunchedEffect(journalId) {
-                if (journalId != null) {
-                    journalViewModel.getJournalById(journalId)
-                }
-            }
-
-            val journalState by journalViewModel.uiState.collectAsState()
-
-            // PERBAIKAN PADA PEMANGGILAN FUNGSI DI BAWAH INI
-            ViewJournalScreen(
-                journalState = journalState,
-                // Dihapus: navController = navController,
-                onNavigateBack = { navController.popBackStack() }, // Ditambahkan: Berikan aksi untuk tombol kembali
-                onEdit = {
-                    // Pastikan journalId tidak null saat navigasi
-                    journalId?.let { id ->
-                        navController.navigate("edit_journal/$id")
+            // Guard navigasi: Pastikan pengguna sudah login
+            val currentUser = FirebaseAuth.getInstance().currentUser
+            if (currentUser == null) {
+                LaunchedEffect(Unit) {
+                    navController.navigate("login") {
+                        popUpTo(navController.graph.id) { inclusive = true }
                     }
-                },
-                onDelete = {
-                    journalId?.let { id -> journalViewModel.deleteJournal(id) }
-                    navController.popBackStack()
                 }
-            )
+            } else {
+                val journalId = backStackEntry.arguments?.getString("journalId")
+
+                LaunchedEffect(journalId) {
+                    if (journalId != null) {
+                        journalViewModel.getJournalById(journalId)
+                    }
+                }
+
+                val journalState by journalViewModel.uiState.collectAsState()
+
+                ViewJournalScreen(
+                    journalState = journalState,
+                    onNavigateBack = { navController.popBackStack() },
+                    onEdit = {
+                        journalId?.let { id ->
+                            navController.navigate("edit_journal/$id")
+                        }
+                    },
+                    onDelete = {
+                        journalId?.let { id -> journalViewModel.deleteJournal(id) }
+                        navController.popBackStack()
+                    }
+                )
+            }
         }
 
         composable("calendar") {
-            val calendarViewModel: CalendarViewModel = viewModel(factory = calendarViewModelFactory)
-            CalendarScreen(
-                navController = navController,
-                viewModel = calendarViewModel
-            )
+            // Guard navigasi: Pastikan pengguna sudah login
+            val currentUser = FirebaseAuth.getInstance().currentUser
+            if (currentUser == null) {
+                LaunchedEffect(Unit) {
+                    navController.navigate("login") {
+                        popUpTo(navController.graph.id) { inclusive = true }
+                    }
+                }
+            } else {
+                val calendarViewModel: CalendarViewModel = viewModel(factory = calendarViewModelFactory)
+                CalendarScreen(
+                    navController = navController,
+                    viewModel = calendarViewModel
+                )
+            }
         }
 
         composable("profile") {
+            // Guard navigasi: Pastikan pengguna sudah login
+            val currentUser = FirebaseAuth.getInstance().currentUser
+            if (currentUser == null) {
+                LaunchedEffect(Unit) {
+                    navController.navigate("login") {
+                        popUpTo(navController.graph.id) { inclusive = true }
+                    }
+                }
+            } else {
+                val profileViewModel: ProfileViewModel = viewModel(factory = profileViewModelFactory)
+                ProfileScreen(
+                    navController = navController,
+                    profileViewModel = profileViewModel,
+                    onLogout = {
+                        navController.navigate("login") {
+                            popUpTo(navController.graph.id) { inclusive = true }
+                        }
+                    }
+                )
+            }
+        }
+
+        composable("edit_profile") {
+            // Guard navigasi: Pastikan pengguna sudah login
+            val currentUser = FirebaseAuth.getInstance().currentUser
+            if (currentUser == null) {
+                LaunchedEffect(Unit) {
+                    navController.navigate("login") {
+                        popUpTo(navController.graph.id) { inclusive = true }
+                    }
+                }
+            } else {
+                val profileViewModel: ProfileViewModel = viewModel(factory = profileViewModelFactory)
+                EditProfileScreen(
+                    profileViewModel = profileViewModel,
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+        }
+
+        composable("change_password") {
+            // Guard navigasi: Pastikan pengguna sudah login
+            val currentUser = FirebaseAuth.getInstance().currentUser
+            if (currentUser == null) {
+                LaunchedEffect(Unit) {
+                    navController.navigate("login") {
+                        popUpTo(navController.graph.id) { inclusive = true }
+                    }
+                }
+            } else {
+                val profileViewModel: ProfileViewModel = viewModel(factory = profileViewModelFactory)
+                ChangePasswordScreen(
+                    profileViewModel = profileViewModel,
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
         }
 
         composable("splash") {
+            val splashViewModel: SplashViewModel = viewModel()
+            LaunchedEffect(Unit) {
+                splashViewModel.navigationEvent.collect { route ->
+                    navController.navigate(route) {
+                        popUpTo("splash") { inclusive = true }
+                    }
+                }
+            }
             SplashScreen(navController = navController)
         }
 
         composable("onboarding") {
             OnboardingScreen(navController = navController)
-        }
-
-// Rute untuk Profil
-        composable("profile") {
-            // Kita akan buat ViewModel ini di langkah D
-            val profileViewModel: ProfileViewModel = viewModel(factory = ProfileViewModelFactory(authRepository))
-            ProfileScreen(
-                navController = navController,
-                profileViewModel = profileViewModel
-            )
-        }
-
-        composable("edit_profile") {
-            val profileViewModel: ProfileViewModel = viewModel(factory = ProfileViewModelFactory(authRepository))
-            EditProfileScreen(
-                // Teruskan ViewModel dan fungsi navigasi kembali
-                profileViewModel = profileViewModel,
-                onNavigateBack = { navController.popBackStack() }
-            )
-        }
-
-        composable("change_password") {
-            ChangePasswordScreen(
-                onNavigateBack = { navController.popBackStack() }
-            )
         }
     }
 }

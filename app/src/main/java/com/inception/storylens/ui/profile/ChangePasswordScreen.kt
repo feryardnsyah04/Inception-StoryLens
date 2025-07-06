@@ -1,5 +1,6 @@
 package com.inception.storylens.ui.profile
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -19,28 +20,46 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.platform.LocalContext
+import com.inception.storylens.viewmodel.ProfileViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChangePasswordScreen(
+    profileViewModel: ProfileViewModel,
     onNavigateBack: () -> Unit
 ) {
     var newPassword by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     var isPasswordVisible by remember { mutableStateOf(false) }
     var isConfirmPasswordVisible by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val profileState by profileViewModel.profileState.collectAsState()
+
+    LaunchedEffect(profileState.isPasswordChangeSuccess) {
+        if (profileState.isPasswordChangeSuccess) {
+            Toast.makeText(context, "Kata sandi berhasil diperbarui!", Toast.LENGTH_SHORT).show()
+            profileViewModel.clearPasswordChangeStatus()
+            onNavigateBack()
+        }
+    }
+
+    LaunchedEffect(profileState.passwordChangeError) {
+        profileState.passwordChangeError?.let {
+            Toast.makeText(context, "Error: $it", Toast.LENGTH_LONG).show()
+            profileViewModel.clearPasswordChangeStatus()
+        }
+    }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background
     ) { scaffoldPadding ->
-        // Box ini berfungsi untuk memberi padding di sekeliling Surface utama
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(scaffoldPadding)
                 .padding(16.dp)
         ) {
-            // --- SATU SURFACE PUTIH UNTUK SEMUA KONTEN ---
             Surface(
                 modifier = Modifier.fillMaxSize(),
                 shape = RoundedCornerShape(24.dp),
@@ -52,7 +71,6 @@ fun ChangePasswordScreen(
                         .fillMaxSize()
                         .padding(horizontal = 24.dp)
                 ) {
-                    // Top Bar Dibuat manual di sini
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -83,7 +101,6 @@ fun ChangePasswordScreen(
                     )
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    // Kolom input Kata Sandi Baru
                     Text("Kata Sandi Baru", style = MaterialTheme.typography.labelLarge)
                     Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
@@ -103,7 +120,6 @@ fun ChangePasswordScreen(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Kolom input Ulangi Kata Sandi Baru
                     Text("Ulangi Kata Sandi Baru", style = MaterialTheme.typography.labelLarge)
                     Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
@@ -123,16 +139,36 @@ fun ChangePasswordScreen(
 
                     Spacer(modifier = Modifier.weight(1f))
 
-                    // Tombol Ubah Kata Sandi
                     Button(
-                        onClick = { /* TODO: Logika ubah kata sandi */ },
+                        onClick = {
+                            if (newPassword.isBlank() || confirmPassword.isBlank()) {
+                                Toast.makeText(context, "Kata sandi tidak boleh kosong.", Toast.LENGTH_SHORT).show()
+                            } else if (newPassword != confirmPassword) {
+                                Toast.makeText(context, "Kata sandi baru dan konfirmasi tidak cocok.", Toast.LENGTH_SHORT).show()
+                            } else if (newPassword.length < 8 || newPassword.length > 20 ||
+                                !newPassword.matches(".*[0-9].*".toRegex()) ||
+                                !newPassword.matches(".*[!@#$%^&*()].*".toRegex())) {
+                                Toast.makeText(context, "Kata sandi tidak memenuhi kriteria keamanan.", Toast.LENGTH_LONG).show()
+                            }
+                            else {
+                                profileViewModel.changePassword(newPassword)
+                            }
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(50.dp)
                             .padding(bottom = 16.dp),
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(12.dp),
+                        enabled = !profileState.isLoading // Nonaktifkan tombol saat loading
                     ) {
-                        Text("Ubah Kata Sandi", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        if (profileState.isLoading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                        } else {
+                            Text("Ubah Kata Sandi", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        }
                     }
                 }
             }

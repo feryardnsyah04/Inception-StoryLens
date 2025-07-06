@@ -1,5 +1,6 @@
 package com.inception.storylens.ui.profile
 
+import android.content.pm.PackageManager
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -16,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -23,7 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-// 1. Sesuaikan import R, ViewModel, dan tambahkan import untuk Navbar
+import coil.compose.AsyncImage
 import com.inception.storylens.R
 import com.inception.storylens.ui.components.StoryLensBottomAppBar
 import com.inception.storylens.viewmodel.ProfileViewModel
@@ -31,46 +33,53 @@ import com.inception.storylens.viewmodel.ProfileViewModel
 @Composable
 fun ProfileScreen(
     navController: NavController,
-    profileViewModel: ProfileViewModel = viewModel()
+    profileViewModel: ProfileViewModel = viewModel(),
+    onLogout: () -> Unit
 ) {
     val profileState by profileViewModel.profileState.collectAsState()
     var showExitDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        profileViewModel.loadUserProfile()
+    }
+
+    val appVersion: String = remember {
+        try {
+            val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+            packageInfo.versionName ?: "N/A"
+        } catch (_: PackageManager.NameNotFoundException) {
+            "N/A"
+        }
+    }
 
     if (showExitDialog) {
         ExitConfirmationDialog(
             onConfirm = {
                 showExitDialog = false
-                navController.navigate("login") {
-                    popUpTo(navController.graph.id) {
-                        inclusive = true
-                    }
-                }
+                profileViewModel.logout()
+                onLogout()
             },
             onDismiss = { showExitDialog = false }
         )
     }
 
-    // 2. Bungkus semua konten dengan Scaffold untuk menambahkan bottomBar
     Scaffold(
         bottomBar = {
-            // 3. Definisikan StoryLensBottomAppBar di sini
             StoryLensBottomAppBar(
                 navController = navController,
                 onAddClick = { navController.navigate("add_journal") }
             )
         }
-    ) { innerPadding -> // Scaffold menyediakan 'innerPadding'
-        // Box utama untuk latar belakang (UI TIDAK DIUBAH)
+    ) { innerPadding ->
         Box(
             modifier = Modifier
-                // 4. Terapkan padding dari Scaffold agar konten tidak tertutup navbar
                 .padding(innerPadding)
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
                 .padding(vertical = 32.dp, horizontal = 16.dp),
             contentAlignment = Alignment.TopCenter
         ) {
-            // --- KONTEN UI ANDA YANG LAIN TETAP SAMA ---
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -86,14 +95,28 @@ fun ProfileScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Spacer(modifier = Modifier.height(32.dp))
-                    Image(
-                        painter = painterResource(id = R.drawable.avatar_profile),
-                        contentDescription = "Avatar",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .size(100.dp)
-                            .clip(CircleShape)
-                    )
+
+                    // Logika untuk menampilkan avatar (menggunakan AsyncImage jika URL tersedia)
+                    if (!profileState.avatarUrl.isNullOrEmpty()) {
+                        AsyncImage(
+                            model = profileState.avatarUrl,
+                            contentDescription = "Avatar Pengguna",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .size(100.dp)
+                                .clip(CircleShape)
+                        )
+                    } else {
+                        Image(
+                            painter = painterResource(id = R.drawable.avatar_profile),
+                            contentDescription = "Avatar Placeholder",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .size(100.dp)
+                                .clip(CircleShape)
+                        )
+                    }
+
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
                         text = profileState.userName,
@@ -109,12 +132,12 @@ fun ProfileScreen(
                     Spacer(modifier = Modifier.height(32.dp))
 
                     Column {
+                        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                         ProfileMenuItem(
                             icon = Icons.Default.Person,
                             text = "Profil",
                             onClick = { navController.navigate("edit_profile") }
                         )
-                        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                         ProfileMenuItem(
                             icon = Icons.Default.Lock,
                             text = "Kata Sandi",
@@ -122,15 +145,7 @@ fun ProfileScreen(
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(24.dp))
-
                     Column {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {}
                         HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                         Row(
                             modifier = Modifier
@@ -140,7 +155,7 @@ fun ProfileScreen(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text("Versi")
-                            Text("1.0.0", fontWeight = FontWeight.Bold)
+                            Text(appVersion, fontWeight = FontWeight.Bold)
                         }
                         HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                         Text(
@@ -180,8 +195,9 @@ fun ExitConfirmationDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(text = "Konfirmasi Keluar", fontWeight = FontWeight.Bold) },
-        text = { Text(text = "Apakah Anda yakin ingin keluar dari aplikasi?") },
+        text = { Text(text = "Apakah Anda yakin ingin keluar dari akun anda?") },
         confirmButton = { TextButton(onClick = onConfirm) { Text("Ya", fontWeight = FontWeight.Bold) } },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Tidak", fontWeight = FontWeight.Bold) } }
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Tidak", fontWeight = FontWeight.Bold) } },
+        containerColor = MaterialTheme.colorScheme.surface,
     )
 }
