@@ -43,7 +43,7 @@ fun JournalItem(
             onDismissRequest = { showDialog = false },
             title = { Text("Anda yakin ingin menghapus jurnal?") },
             text = { Text("Setelah dihapus, jurnal tidak dapat dipulihkan") },
-            confirmButton = { TextButton(onClick = { onDelete(); showDialog = false }) { Text("Ya", color = MaterialTheme.colorScheme.primary) } },
+            confirmButton = { TextButton(onClick = { onDelete(); showDialog = false }) { Text("Ya, hapus", color = MaterialTheme.colorScheme.primary) } },
             dismissButton = { TextButton(onClick = { showDialog = false }) { Text("Tidak", color = MaterialTheme.colorScheme.primary) } },
             containerColor = MaterialTheme.colorScheme.surface
         )

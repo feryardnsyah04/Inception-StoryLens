@@ -17,8 +17,8 @@ import java.util.UUID
 
 open class AuthRepository(
     private val firebaseAuth: FirebaseAuth?,
-    private val firestore: FirebaseFirestore,
-    private val supabase: SupabaseClient, // Tambahkan SupabaseClient
+    firestore: FirebaseFirestore,
+    supabase: SupabaseClient, // Tambahkan SupabaseClient
     private val context: Context // Tambahkan Context untuk FileProvider
 ) {
     private val tag = "AuthRepository"

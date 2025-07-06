@@ -34,10 +34,6 @@ class JournalViewModel(private val repository: JournalRepository) : ViewModel() 
         it.note.contains(searchQuery, ignoreCase = true)
     }
 
-    init {
-        loadJournals()
-    }
-
     fun loadJournals() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)

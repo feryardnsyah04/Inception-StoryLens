@@ -161,12 +161,6 @@ fun ViewJournalScreen(
                     ) {
                         Text(text = entry.title, style = MaterialTheme.typography.bodyLarge)
                     }
-                    Text(
-                        text = formatDate(entry.timestamp),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(top = 8.dp, start = 4.dp)
-                    )
                 }
 
                 Column {
@@ -184,6 +178,18 @@ fun ViewJournalScreen(
                             lineHeight = 24.sp,
                         )
                     }
+                }
+
+                Column {
+                    Text(
+                        text = formatDate(entry.timestamp),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier
+                            .padding(top = 8.dp, start = 4.dp)
+                            .fillMaxWidth(),
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
                 }
             }
         }
